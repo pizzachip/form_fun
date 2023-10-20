@@ -21,8 +21,8 @@ erl_crash.dump
 
 # Temporary files, for example, from tests.
 /tmp/
-.swp
-.swa
+*.swp
+*.swa
 
 # Ignore package tarball (built via "mix hex.build").
 form_fun-*.tar

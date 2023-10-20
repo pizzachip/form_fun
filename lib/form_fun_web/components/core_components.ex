@@ -1,282 +1,282 @@
-defmodule FormFunWeb.CoreComponents do
-  @moduledoc """
-  Provides core UI components.
+  defmodule FormFunWeb.CoreComponents do
+    @moduledoc """
+    Provides core UI components.
 
-  At the first glance, this module may seem daunting, but its goal is
-  to provide some core building blocks in your application, such as modals,
-  tables, and forms. The components are mostly markup and well documented
-  with doc strings and declarative assigns. You may customize and style
-  them in any way you want, based on your application growth and needs.
+    At the first glance, this module may seem daunting, but its goal is
+    to provide some core building blocks in your application, such as modals,
+    tables, and forms. The components are mostly markup and well documented
+    with doc strings and declarative assigns. You may customize and style
+    them in any way you want, based on your application growth and needs.
 
-  The default components use Tailwind CSS, a utility-first CSS framework.
-  See the [Tailwind CSS documentation](https://tailwindcss.com) to learn
-  how to customize them or feel free to swap in another framework altogether.
+    The default components use Tailwind CSS, a utility-first CSS framework.
+    See the [Tailwind CSS documentation](https://tailwindcss.com) to learn
+    how to customize them or feel free to swap in another framework altogether.
 
-  Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
-  """
-  use Phoenix.Component
+    Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
+    """
+    use Phoenix.Component
 
-  alias Phoenix.LiveView.JS
-  import FormFunWeb.Gettext
+    alias Phoenix.LiveView.JS
+    import FormFunWeb.Gettext
 
-  @doc """
-  Renders a modal.
+    @doc """
+    Renders a modal.
 
-  ## Examples
+    ## Examples
 
-      <.modal id="confirm-modal">
-        This is a modal.
-      </.modal>
+        <.modal id="confirm-modal">
+          This is a modal.
+        </.modal>
 
-  JS commands may be passed to the `:on_cancel` to configure
-  the closing/cancel event, for example:
+    JS commands may be passed to the `:on_cancel` to configure
+    the closing/cancel event, for example:
 
-      <.modal id="confirm" on_cancel={JS.navigate(~p"/posts")}>
-        This is another modal.
-      </.modal>
+        <.modal id="confirm" on_cancel={JS.navigate(~p"/posts")}>
+          This is another modal.
+        </.modal>
 
-  """
-  attr :id, :string, required: true
-  attr :show, :boolean, default: false
-  attr :on_cancel, JS, default: %JS{}
-  slot :inner_block, required: true
+    """
+    attr :id, :string, required: true
+    attr :show, :boolean, default: false
+    attr :on_cancel, JS, default: %JS{}
+    slot :inner_block, required: true
 
-  def modal(assigns) do
-    ~H"""
-    <div
-      id={@id}
-      phx-mounted={@show && show_modal(@id)}
-      phx-remove={hide_modal(@id)}
-      data-cancel={JS.exec(@on_cancel, "phx-remove")}
-      class="relative z-50 hidden"
-    >
-      <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+    def modal(assigns) do
+      ~H"""
       <div
-        class="fixed inset-0 overflow-y-auto"
-        aria-labelledby={"#{@id}-title"}
-        aria-describedby={"#{@id}-description"}
-        role="dialog"
-        aria-modal="true"
-        tabindex="0"
+        id={@id}
+        phx-mounted={@show && show_modal(@id)}
+        phx-remove={hide_modal(@id)}
+        data-cancel={JS.exec(@on_cancel, "phx-remove")}
+        class="relative z-50 hidden"
       >
-        <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
-            <.focus_wrap
-              id={"#{@id}-container"}
-              phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
-              phx-key="escape"
-              phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
-            >
-              <div class="absolute top-6 right-5">
-                <button
-                  phx-click={JS.exec("data-cancel", to: "##{@id}")}
-                  type="button"
-                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
-                  aria-label={gettext("close")}
-                >
-                  <.icon name="hero-x-mark-solid" class="h-5 w-5" />
-                </button>
-              </div>
-              <div id={"#{@id}-content"}>
-                <%= render_slot(@inner_block) %>
-              </div>
-            </.focus_wrap>
+        <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+        <div
+          class="fixed inset-0 overflow-y-auto"
+          aria-labelledby={"#{@id}-title"}
+          aria-describedby={"#{@id}-description"}
+          role="dialog"
+          aria-modal="true"
+          tabindex="0"
+        >
+          <div class="flex min-h-full items-center justify-center">
+            <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+              <.focus_wrap
+                id={"#{@id}-container"}
+                phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
+                phx-key="escape"
+                phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
+                class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              >
+                <div class="absolute top-6 right-5">
+                  <button
+                    phx-click={JS.exec("data-cancel", to: "##{@id}")}
+                    type="button"
+                    class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
+                    aria-label={gettext("close")}
+                  >
+                    <.icon name="hero-x-mark-solid" class="h-5 w-5" />
+                  </button>
+                </div>
+                <div id={"#{@id}-content"}>
+                  <%= render_slot(@inner_block) %>
+                </div>
+              </.focus_wrap>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      """
+    end
+
+    @doc """
+    Renders flash notices.
+
+    ## Examples
+
+        <.flash kind={:info} flash={@flash} />
+        <.flash kind={:info} phx-mounted={show("#flash")}>Welcome Back!</.flash>
     """
-  end
+    attr :id, :string, default: "flash", doc: "the optional id of flash container"
+    attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
+    attr :title, :string, default: nil
+    attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+    attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
-  @doc """
-  Renders flash notices.
+    slot :inner_block, doc: "the optional inner block that renders the flash message"
 
-  ## Examples
-
-      <.flash kind={:info} flash={@flash} />
-      <.flash kind={:info} phx-mounted={show("#flash")}>Welcome Back!</.flash>
-  """
-  attr :id, :string, default: "flash", doc: "the optional id of flash container"
-  attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
-  attr :title, :string, default: nil
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
-  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
-
-  slot :inner_block, doc: "the optional inner block that renders the flash message"
-
-  def flash(assigns) do
-    ~H"""
-    <div
-      :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
-      id={@id}
-      phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
-      role="alert"
-      class={[
-        "fixed top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
-      ]}
-      {@rest}
-    >
-      <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
-        <%= @title %>
-      </p>
-      <p class="mt-2 text-sm leading-5"><%= msg %></p>
-      <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
-        <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
-      </button>
-    </div>
-    """
-  end
-
-  @doc """
-  Shows the flash group with standard titles and content.
-
-  ## Examples
-
-      <.flash_group flash={@flash} />
-  """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  def flash_group(assigns) do
-    ~H"""
-    <.flash kind={:info} title="Success!" flash={@flash} />
-    <.flash kind={:error} title="Error!" flash={@flash} />
-    <.flash
-      id="client-error"
-      kind={:error}
-      title="We can't find the internet"
-      phx-disconnected={show(".phx-client-error #client-error")}
-      phx-connected={hide("#client-error")}
-      hidden
-    >
-      Attempting to reconnect <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
-    </.flash>
-
-    <.flash
-      id="server-error"
-      kind={:error}
-      title="Something went wrong!"
-      phx-disconnected={show(".phx-server-error #server-error")}
-      phx-connected={hide("#server-error")}
-      hidden
-    >
-      Hang in there while we get back on track
-      <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
-    </.flash>
-    """
-  end
-
-  @doc """
-  Renders a simple form.
-
-  ## Examples
-
-      <.simple_form for={@form} phx-change="validate" phx-submit="save">
-        <.input field={@form[:email]} label="Email"/>
-        <.input field={@form[:username]} label="Username" />
-        <:actions>
-          <.button>Save</.button>
-        </:actions>
-      </.simple_form>
-  """
-  attr :for, :any, required: true, doc: "the datastructure for the form"
-  attr :as, :any, default: nil, doc: "the server side parameter to collect all input under"
-
-  attr :rest, :global,
-    include: ~w(autocomplete name rel action enctype method novalidate target multipart),
-    doc: "the arbitrary HTML attributes to apply to the form tag"
-
-  slot :inner_block, required: true
-  slot :actions, doc: "the slot for form actions, such as a submit button"
-
-  def simple_form(assigns) do
-    ~H"""
-    <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-10 space-y-8 bg-white">
-        <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
-          <%= render_slot(action, f) %>
-        </div>
+    def flash(assigns) do
+      ~H"""
+      <div
+        :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
+        id={@id}
+        phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+        role="alert"
+        class={[
+          "fixed top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
+          @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
+          @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
+        ]}
+        {@rest}
+      >
+        <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
+          <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
+          <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
+          <%= @title %>
+        </p>
+        <p class="mt-2 text-sm leading-5"><%= msg %></p>
+        <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
+          <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
+        </button>
       </div>
-    </.form>
+      """
+    end
+
+    @doc """
+    Shows the flash group with standard titles and content.
+
+    ## Examples
+
+        <.flash_group flash={@flash} />
     """
-  end
+    attr :flash, :map, required: true, doc: "the map of flash messages"
 
-  @doc """
-  Renders a button.
+    def flash_group(assigns) do
+      ~H"""
+      <.flash kind={:info} title="Success!" flash={@flash} />
+      <.flash kind={:error} title="Error!" flash={@flash} />
+      <.flash
+        id="client-error"
+        kind={:error}
+        title="We can't find the internet"
+        phx-disconnected={show(".phx-client-error #client-error")}
+        phx-connected={hide("#client-error")}
+        hidden
+      >
+        Attempting to reconnect <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
+      </.flash>
 
-  ## Examples
+      <.flash
+        id="server-error"
+        kind={:error}
+        title="Something went wrong!"
+        phx-disconnected={show(".phx-server-error #server-error")}
+        phx-connected={hide("#server-error")}
+        hidden
+      >
+        Hang in there while we get back on track
+        <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
+      </.flash>
+      """
+    end
 
-      <.button>Send!</.button>
-      <.button phx-click="go" class="ml-2">Send!</.button>
-  """
-  attr :type, :string, default: nil
-  attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(disabled form name value)
+    @doc """
+    Renders a simple form.
 
-  slot :inner_block, required: true
+    ## Examples
 
-  def button(assigns) do
-    ~H"""
-    <button
-      type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
-        @class
-      ]}
-      {@rest}
-    >
-      <%= render_slot(@inner_block) %>
-    </button>
+        <.simple_form for={@form} phx-change="validate" phx-submit="save">
+          <.input field={@form[:email]} label="Email"/>
+          <.input field={@form[:username]} label="Username" />
+          <:actions>
+            <.button>Save</.button>
+          </:actions>
+        </.simple_form>
     """
-  end
+    attr :for, :any, required: true, doc: "the datastructure for the form"
+    attr :as, :any, default: nil, doc: "the server side parameter to collect all input under"
 
-  @doc """
-  Renders an input with label and error messages.
+    attr :rest, :global,
+      include: ~w(autocomplete name rel action enctype method novalidate target multipart),
+      doc: "the arbitrary HTML attributes to apply to the form tag"
 
-  A `Phoenix.HTML.FormField` may be passed as argument,
-  which is used to retrieve the input name, id, and values.
-  Otherwise all attributes may be passed explicitly.
+    slot :inner_block, required: true
+    slot :actions, doc: "the slot for form actions, such as a submit button"
 
-  ## Types
+    def simple_form(assigns) do
+      ~H"""
+      <.form :let={f} for={@for} as={@as} {@rest}>
+        <div class="mt-10 space-y-8 bg-white">
+          <%= render_slot(@inner_block, f) %>
+          <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+            <%= render_slot(action, f) %>
+          </div>
+        </div>
+      </.form>
+      """
+    end
 
-  This function accepts all HTML input types, considering that:
+    @doc """
+    Renders a button.
 
-    * You may also set `type="select"` to render a `<select>` tag
+    ## Examples
 
-    * `type="checkbox"` is used exclusively to render boolean values
+        <.button>Send!</.button>
+        <.button phx-click="go" class="ml-2">Send!</.button>
+    """
+    attr :type, :string, default: nil
+    attr :class, :string, default: nil
+    attr :rest, :global, include: ~w(disabled form name value)
 
-    * For live file uploads, see `Phoenix.Component.live_file_input/1`
+    slot :inner_block, required: true
 
-  See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
-  for more information.
+    def button(assigns) do
+      ~H"""
+      <button
+        type={@type}
+        class={[
+          "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
+          "text-sm font-semibold leading-6 text-white active:text-white/80",
+          @class
+        ]}
+        {@rest}
+      >
+        <%= render_slot(@inner_block) %>
+      </button>
+      """
+    end
 
-  ## Examples
+    @doc """
+    Renders an input with label and error messages.
 
-      <.input field={@form[:email]} type="email" />
-      <.input name="my-input" errors={["oh no!"]} />
-  """
-  attr :id, :any, default: nil
-  attr :name, :any
-  attr :label, :string, default: nil
-  attr :value, :any
+    A `Phoenix.HTML.FormField` may be passed as argument,
+    which is used to retrieve the input name, id, and values.
+    Otherwise all attributes may be passed explicitly.
 
-  attr :type, :string,
-    default: "text",
-    values: ~w(checkbox color date datetime-local email file hidden month number password
-               range radio search select tel text textarea time url week)
+    ## Types
 
-  attr :field, Phoenix.HTML.FormField,
-    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+    This function accepts all HTML input types, considering that:
 
-  attr :errors, :list, default: []
-  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
-  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+      * You may also set `type="select"` to render a `<select>` tag
+
+      * `type="checkbox"` is used exclusively to render boolean values
+
+      * For live file uploads, see `Phoenix.Component.live_file_input/1`
+
+    See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+    for more information.
+
+    ## Examples
+
+        <.input field={@form[:email]} type="email" />
+        <.input name="my-input" errors={["oh no!"]} />
+    """
+    attr :id, :any, default: nil
+    attr :name, :any
+    attr :label, :string, default: nil
+    attr :value, :any
+
+    attr :type, :string,
+      default: "text",
+      values: ~w(checkbox color date datetime-local email file hidden month number password
+                 range radio search select tel text textarea time url week)
+
+    attr :field, Phoenix.HTML.FormField,
+      doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+    attr :errors, :list, default: []
+    attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+    attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
 

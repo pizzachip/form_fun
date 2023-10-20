@@ -3,7 +3,7 @@ defmodule FormFunWeb.Home do
   import FormFun.Components.Text
   import Ecto.Changeset
   import Phoenix.HTML.Form
-  alias FormFun.{FormFields, Animals}
+  alias FormFun.{FormFields, Animal}
 
   def render(assigns) do
     ~H"""
@@ -11,7 +11,7 @@ defmodule FormFunWeb.Home do
       <.simple_form for={@form} phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label="Name"/>
         <.input field={@form[:age]} label="Age" />
-        <.input field={@form[:animals]} label="Animals" type="select" multiple={true} options={@animal_options} />
+        <.input field={@form[:animals]} label="Animals" type="select" multiple={true} options={animal_options(@animals)} />
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -34,7 +34,7 @@ defmodule FormFunWeb.Home do
       |> assign(:page_title, "New Form Fun")
       |> assign(:last_input, %FormFields{name: "Your Name", age: 18, animals: []})
       |> assign(:form_valid, false)
-      |> assign(:animal_options, ["Dog", "Cat", "Giraffe"])
+      |> assign(:animals, initial_animals())
       |> assign(:form, my_form(%FormFields{name: nil, age: nil, animals: []}))
 
     {:ok, assigns}
@@ -56,7 +56,7 @@ defmodule FormFunWeb.Home do
     }
   end
 
-  @spec translate_animals([String.t()]) :: [Animals.t()] 
+  @spec translate_animals([String.t()]) :: [Animal.t()] 
   def translate_animals(animals) do
     animals
     |> Enum.map(fn animal -> %{name: animal, qty: 1} end)
@@ -88,5 +88,17 @@ defmodule FormFunWeb.Home do
     form_fields 
     |> FormFields.changeset 
     |> to_form 
+  end
+
+  @spec initial_animals() :: [Animal.t()]
+  def initial_animals() do
+    for animal <- ["Dog", "Cat", "Giraffe"], reduce: [] do
+      acc -> [%Animal{id: length(acc) + 1, name: animal, qty: 2} | acc]
+    end
+  end
+
+  @spec animal_options([Animal.t()]) :: [String.t()]
+  def animal_options(animals) do
+    Enum.reduce(animals, [], fn animal, acc -> [ {animal.name, animal.id} | acc] end)
   end
 end

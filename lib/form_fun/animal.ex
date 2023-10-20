@@ -1,4 +1,4 @@
-defmodule FormFun.Animals do
+defmodule FormFun.Animal do
   use Ecto.Schema
 
   embedded_schema do
