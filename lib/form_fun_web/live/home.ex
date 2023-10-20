@@ -42,33 +42,28 @@ defmodule FormFunWeb.Home do
 
   @impl true
   def handle_event("save", %{"form_fields" => params}, socket) do
-    animals = translate_animals(params["animals"])
+    animals = translate_animals(params["animals"], socket.assigns.animals)
+    new_params = 
+      %FormFields{}
+      |> FormFields.changeset(Map.merge(params, %{"animals" => animals}))
+      |> apply_changes
 
-    new_params = Map.merge(params, %{["animals"] => animals})
 
     {:noreply, 
-      assign(socket, %{last_input: %FormFields{} 
-                       |> FormFields.changeset(new_params) 
-                       |> IO.inspect(label: "change set 1")
-                       |> apply_changes}
-                       |> IO.inspect(label: "save form fields")
-      )
+      socket
+      |> assign(:form_fields, new_params)
+      |> assign(:last_input, new_params) 
     }
-  end
-
-  @spec translate_animals([String.t()]) :: [Animal.t()] 
-  def translate_animals(animals) do
-    animals
-    |> Enum.map(fn animal -> %{name: animal, qty: 1} end)
-    |> IO.inspect(label: "animals in translate")
   end
 
   @impl true
   def handle_event("validate", %{"form_fields" => params}, socket) do
-    myform = FormFields.changeset(%FormFields{}, params) 
+    animals = translate_animals(params["animals"] || [], socket.assigns.animals)
+
+    myform = FormFields.changeset(%FormFields{}, Map.merge(params, %{"animals" => animals})) 
 
     if myform.valid? do
-    {:noreply, assign(socket, %{form_valid: true})}
+      {:noreply, assign(socket, %{form_valid: true})}
     else
 
       errors = myform.errors 
@@ -100,5 +95,15 @@ defmodule FormFunWeb.Home do
   @spec animal_options([Animal.t()]) :: [String.t()]
   def animal_options(animals) do
     Enum.reduce(animals, [], fn animal, acc -> [ {animal.name, animal.id} | acc] end)
+  end
+
+  @spec translate_animals([String.t()], [Animal.t()]) :: [map()] 
+  def translate_animals(form_animals, animal_collection) do
+    IO.inspect({form_animals, animal_collection})
+
+    form_animals
+    |> Enum.map(fn id -> id |> String.to_integer end )
+    |> Enum.map(fn x -> Enum.reduce(animal_collection, [], fn y, acc -> if x == y.id, do: y, else: acc end) end) 
+    |> Enum.map(fn animal -> animal |> Map.from_struct end )
   end
 end
