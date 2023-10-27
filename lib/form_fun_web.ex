@@ -62,6 +62,8 @@ defmodule FormFunWeb do
     quote do
       use Phoenix.LiveComponent
 
+      on_mount FormFunWeb.Flash
+
       unquote(html_helpers())
     end
   end

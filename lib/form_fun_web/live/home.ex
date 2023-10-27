@@ -1,17 +1,22 @@
 defmodule FormFunWeb.Home do
   use FormFunWeb, :live_view
+  import FormFunWeb.Flash
   import FormFun.Components.Text
   import Ecto.Changeset
-  import Phoenix.HTML.Form
   alias FormFun.{FormFields, Animal}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <.body>
       <.simple_form for={@form} phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label="Name"/>
-        <.input field={@form[:age]} label="Age" />
-        <.input field={@form[:animals]} label="Animals" type="select" multiple={true} options={animal_options(@animals)} />
+        <.input field={@form[:age]} type="number" min="0" max="120" label="Age" />
+          <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals Label</label>
+            <%= for animal <- @animals do %>
+              <.input name={"form_fields[animals]["<>animal.name<>"][chosen]"} type="checkbox" value="false" />
+              <.input name={"form_fields[animals]["<>animal.name<>"][qty]"} value={animal.qty} label={animal.name} type="number" />  
+            <% end %>
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -20,8 +25,8 @@ defmodule FormFunWeb.Home do
       <div><%= @last_input.name %></div>
       <div><%= @last_input.age %></div>
       <%= for animal <- @last_input.animals do %>
-        <div><%= animal.name  %></div>
-        <div><%= animal.qty  %></div>
+        <div><%= animal.name %></div>
+        <div><%= animal.qty %></div>
       <% end %>
     </.body>
     """
@@ -41,7 +46,8 @@ defmodule FormFunWeb.Home do
   end
 
   @impl true
-  def handle_event("save", %{"form_fields" => params}, socket) do
+  def handle_event("save", params, socket) do
+    IO.inspect(params, label: "params save")
     animals = translate_animals(params["animals"], socket.assigns.animals)
     new_params = 
       %FormFields{}
@@ -63,19 +69,24 @@ defmodule FormFunWeb.Home do
     myform = FormFields.changeset(%FormFields{}, Map.merge(params, %{"animals" => animals})) 
 
     if myform.valid? do
+      put_flash!(socket, :success, "Form is valid")
       {:noreply, assign(socket, %{form_valid: true})}
     else
 
       errors = myform.errors 
              |> Enum.map(fn { field, { message, _ }} -> {field, message} end)
-             |> IO.inspect(label: "my form values")
              
       {:noreply,
         socket
         |> assign(%{form_valid: false})
+        |> assign(%{errors: errors})
       }
 
     end
+  end
+
+  def handle_info({:put_flash, type, message}, _params, socket) do
+    {:noreply, put_flash(socket, type, message)}
   end
 
   @spec my_form(%FormFields{}) :: Phoenix.HTML.Form.t()
@@ -99,11 +110,10 @@ defmodule FormFunWeb.Home do
 
   @spec translate_animals([String.t()], [Animal.t()]) :: [map()] 
   def translate_animals(form_animals, animal_collection) do
-    IO.inspect({form_animals, animal_collection})
-
     form_animals
     |> Enum.map(fn id -> id |> String.to_integer end )
     |> Enum.map(fn x -> Enum.reduce(animal_collection, [], fn y, acc -> if x == y.id, do: y, else: acc end) end) 
     |> Enum.map(fn animal -> animal |> Map.from_struct end )
   end
+
 end
