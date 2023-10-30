@@ -10,12 +10,16 @@ defmodule FormFunWeb.Home do
     ~H"""
     <.body>
       <.simple_form for={@form} phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} label="Name"/>
-        <.input field={@form[:age]} type="number" min="0" max="120" label="Age" />
-          <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals Label</label>
+        <.input field={@form[:name]} label="Name" placeholder="Your full name" />
+        <.input field={@form[:age]} type="number" min="0" max="120" placeholder="18" label="Age" />
+          <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
             <%= for animal <- @animals do %>
-              <.input name={"form_fields[animals]["<>animal.name<>"][chosen]"} type="checkbox" value="false" />
-              <.input name={"form_fields[animals]["<>animal.name<>"][qty]"} value={animal.qty} label={animal.name} type="number" />  
+              <div class="flex items-center justify-between">
+                <.input name={"form_fields[animals]["<>animal.id<>"][animal_id]"} type="hidden" value={animal.id} /> 
+                <.input name={"form_fields[animals]["<>animal.id<>"][name]"} type="hidden" value={animal.name} /> 
+                <.input name={"form_fields[animals]["<>animal.id<>"][chosen]"} type="checkbox" value={animal.chosen} checked={animal.chosen} label={animal.name} class="w-1/3" />
+                <.input name={"form_fields[animals]["<>animal.id<>"][qty]"} value={animal.qty}  type="number" class="w-2/3" />  
+              </div>
             <% end %>
         <:actions>
           <.button>Save</.button>
@@ -46,25 +50,26 @@ defmodule FormFunWeb.Home do
   end
 
   @impl true
-  def handle_event("save", params, socket) do
-    IO.inspect(params, label: "params save")
-    animals = translate_animals(params["animals"], socket.assigns.animals)
-    new_params = 
-      %FormFields{}
-      |> FormFields.changeset(Map.merge(params, %{"animals" => animals}))
-      |> apply_changes
+  def handle_event("save", %{"form_fields" => params}, socket) do
+    animals = translate_animals(params["animals"]) 
 
+    active_animals =
+      animals
+      |> Enum.filter(fn animal -> animal["chosen"] == "true" end)
 
+    new_params = %{params | "animals" => active_animals }
+    use_params = FormFields.changeset(%FormFields{}, new_params)
+      
     {:noreply, 
       socket
-      |> assign(:form_fields, new_params)
-      |> assign(:last_input, new_params) 
+      |> assign(:last_input, use_params |> apply_changes) 
+      |> assign(:form, use_params |> to_form)
     }
   end
 
   @impl true
   def handle_event("validate", %{"form_fields" => params}, socket) do
-    animals = translate_animals(params["animals"] || [], socket.assigns.animals)
+    animals = translate_animals(params["animals"])
 
     myform = FormFields.changeset(%FormFields{}, Map.merge(params, %{"animals" => animals})) 
 
@@ -99,21 +104,15 @@ defmodule FormFunWeb.Home do
   @spec initial_animals() :: [Animal.t()]
   def initial_animals() do
     for animal <- ["Dog", "Cat", "Giraffe"], reduce: [] do
-      acc -> [%Animal{id: length(acc) + 1, name: animal, qty: 2} | acc]
+      acc -> [%Animal{id: to_string(length(acc) + 1), name: animal, qty: 0, chosen: false} | acc]
     end
   end
 
-  @spec animal_options([Animal.t()]) :: [String.t()]
-  def animal_options(animals) do
-    Enum.reduce(animals, [], fn animal, acc -> [ {animal.name, animal.id} | acc] end)
-  end
-
-  @spec translate_animals([String.t()], [Animal.t()]) :: [map()] 
-  def translate_animals(form_animals, animal_collection) do
+  @spec translate_animals(map()) :: [map()] 
+  def translate_animals(form_animals) do
     form_animals
-    |> Enum.map(fn id -> id |> String.to_integer end )
-    |> Enum.map(fn x -> Enum.reduce(animal_collection, [], fn y, acc -> if x == y.id, do: y, else: acc end) end) 
-    |> Enum.map(fn animal -> animal |> Map.from_struct end )
+    |> Enum.to_list
+    |> Enum.map(fn {_id, animap} -> animap end)
   end
 
 end

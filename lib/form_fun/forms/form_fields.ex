@@ -4,7 +4,7 @@ defmodule FormFun.FormFields do
   alias FormFun.Animal
 
   embedded_schema do
-    field :name, :string, default: ""
+    field :name, :string
     field :age, :integer
     embeds_many :animals, Animal
   end
@@ -13,5 +13,6 @@ defmodule FormFun.FormFields do
     form_fields
     |> cast(params, [:name, :age])
     |> cast_embed(:animals)
+    |> validate_required([:name, :age])
   end
 end
