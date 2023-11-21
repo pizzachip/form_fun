@@ -12,13 +12,9 @@ defmodule FormFunWeb.Home do
       <.simple_form for={@form} phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label="Name" placeholder="Your full name" />
         <.input field={@form[:age]} type="number" min="0" max="120" placeholder="18" label="Age" />
-          <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
-              <div class="flex items-center justify-between">
-                <.input name={"form_fields[animals]["<>animal.id<>"][animal_id]"} type="hidden" value={animal.id} /> 
-                <.input name={"form_fields[animals]["<>animal.id<>"][name]"} type="hidden" value={animal.name} /> 
-                <.input name={"form_fields[animals]["<>animal.id<>"][chosen]"} type="checkbox" value={animal.chosen} checked={"form_fields[animals]["<>animal.id<>"][chosen]"} label={animal.name} class="w-1/3" />
-                <.input name={"form_fields[animals]["<>animal.id<>"][qty]"} value={"form_fields[animals]["<>animal.id<>"][qty]"} type="number" class="w-2/3" />  
-              </div>
+        <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
+        <%= for animal <- @form.data.animals do %>
+        <% end %>
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -62,7 +58,7 @@ defmodule FormFunWeb.Home do
       socket
       |> assign(:last_input, use_params |> apply_changes) 
       |> assign(:form, use_params |> to_form)
-      |> IO.inspect(label: "new assigns")
+      |> IO.inspect(label: "new socket")
     }
   end
 
