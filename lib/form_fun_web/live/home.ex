@@ -13,14 +13,12 @@ defmodule FormFunWeb.Home do
         <.input field={@form[:name]} label="Name" placeholder="Your full name" />
         <.input field={@form[:age]} type="number" min="0" max="120" placeholder="18" label="Age" />
           <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
-            <%= for animal <- @animals do %>
               <div class="flex items-center justify-between">
                 <.input name={"form_fields[animals]["<>animal.id<>"][animal_id]"} type="hidden" value={animal.id} /> 
                 <.input name={"form_fields[animals]["<>animal.id<>"][name]"} type="hidden" value={animal.name} /> 
-                <.input name={"form_fields[animals]["<>animal.id<>"][chosen]"} type="checkbox" value={animal.chosen} checked={animal.chosen} label={animal.name} class="w-1/3" />
-                <.input name={"form_fields[animals]["<>animal.id<>"][qty]"} value={animal.qty}  type="number" class="w-2/3" />  
+                <.input name={"form_fields[animals]["<>animal.id<>"][chosen]"} type="checkbox" value={animal.chosen} checked={"form_fields[animals]["<>animal.id<>"][chosen]"} label={animal.name} class="w-1/3" />
+                <.input name={"form_fields[animals]["<>animal.id<>"][qty]"} value={"form_fields[animals]["<>animal.id<>"][qty]"} type="number" class="w-2/3" />  
               </div>
-            <% end %>
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -52,18 +50,19 @@ defmodule FormFunWeb.Home do
   @impl true
   def handle_event("save", %{"form_fields" => params}, socket) do
     animals = translate_animals(params["animals"]) 
+              |> IO.inspect(label: "translated animals")
 
-    active_animals =
-      animals
-      |> Enum.filter(fn animal -> animal["chosen"] == "true" end)
+    new_params = %{params | "animals" => animals }
+                 |> IO.inspect(label: "new params")
 
-    new_params = %{params | "animals" => active_animals }
     use_params = FormFields.changeset(%FormFields{}, new_params)
+                 |> IO.inspect(label: "use params")
       
     {:noreply, 
       socket
       |> assign(:last_input, use_params |> apply_changes) 
       |> assign(:form, use_params |> to_form)
+      |> IO.inspect(label: "new assigns")
     }
   end
 
