@@ -13,8 +13,6 @@ defmodule FormFunWeb.Home do
         <.input field={@form[:name]} label="Name" placeholder="Your full name" />
         <.input field={@form[:age]} type="number" min="0" max="120" placeholder="18" label="Age" />
         <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
-        <%= for animal <- @form.data.animals do %>
-        <% end %>
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -45,13 +43,7 @@ defmodule FormFunWeb.Home do
 
   @impl true
   def handle_event("save", %{"form_fields" => params}, socket) do
-    animals = translate_animals(params["animals"]) 
-              |> IO.inspect(label: "translated animals")
-
-    new_params = %{params | "animals" => animals }
-                 |> IO.inspect(label: "new params")
-
-    use_params = FormFields.changeset(%FormFields{}, new_params)
+    use_params = FormFields.changeset(%FormFields{}, params)
                  |> IO.inspect(label: "use params")
       
     {:noreply, 
@@ -64,9 +56,7 @@ defmodule FormFunWeb.Home do
 
   @impl true
   def handle_event("validate", %{"form_fields" => params}, socket) do
-    animals = translate_animals(params["animals"])
-
-    myform = FormFields.changeset(%FormFields{}, Map.merge(params, %{"animals" => animals})) 
+    myform = FormFields.changeset(%FormFields{}, params) 
 
     if myform.valid? do
       put_flash!(socket, :success, "Form is valid")
