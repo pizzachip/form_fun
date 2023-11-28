@@ -13,6 +13,11 @@ defmodule FormFunWeb.Home do
         <.input field={@form[:name]} label="Name" placeholder="Your full name" />
         <.input field={@form[:age]} type="number" min="0" max="120" placeholder="18" label="Age" />
         <label for="form_fields_animals" class="block text-sm font-semibold leading-6 text-zinc-800">Animals</label>
+        <.inputs_for :let={f_nested} field={@form[:animals]}>
+          <.input type="text" field={f_nested[:name]} placeholder="name" />
+          <.input type="text" field={f_nested[:qty]} placeholder="name" />
+          <.input type="checkbox" field={f_nested[:chosen]} placeholder="chosen" />
+        </.inputs_for>
         <:actions>
           <.button>Save</.button>
         </:actions>
@@ -35,8 +40,7 @@ defmodule FormFunWeb.Home do
       |> assign(:page_title, "New Form Fun")
       |> assign(:last_input, %FormFields{name: "Your Name", age: 18, animals: []})
       |> assign(:form_valid, false)
-      |> assign(:animals, initial_animals())
-      |> assign(:form, my_form(%FormFields{name: nil, age: nil, animals: []}))
+      |> assign(:form, my_form(%FormFields{name: nil, age: nil, animals: initial_animals()}))
 
     {:ok, assigns}
   end
